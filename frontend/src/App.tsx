@@ -1,20 +1,29 @@
 import { Notifications } from './Notifications';
-import { ServiceEditor } from './ServiceEditor';
-
-const USER_ID = 'user-1'; // matches mocked backend users
+import { ServiceList } from './ServiceList';
+import { MOCK_USER, MOCK_SERVICES } from './mockData';
 
 function App() {
+  const userId = MOCK_USER.id;
+
   return (
     <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
-      <h1>Notification Demo</h1>
-      <p>Logged in as: <strong>{USER_ID}</strong></p>
+      <h1>ClickHouse Notification Demo</h1>
 
-      <div style={{ display: 'flex', gap: '2rem', marginTop: '2rem' }}>
+      <div style={{ marginBottom: '1rem' }}>
+        <p style={{ margin: 0 }}>
+          Logged in as: <strong>{MOCK_USER.name}</strong> ({MOCK_USER.email})
+        </p>
+        <p style={{ margin: 0 }}>
+          Organization: <strong>{MOCK_USER.orgName}</strong> (ID: {MOCK_USER.orgId})
+        </p>
+      </div>
+
+      <div style={{ display: 'flex', gap: '2rem', marginTop: '2rem', alignItems: 'flex-start' }}>
         <div style={{ flex: 1 }}>
-          <ServiceEditor />
+          <ServiceList initialServices={MOCK_SERVICES} />
         </div>
         <div style={{ flex: 1 }}>
-          <Notifications userId={USER_ID} />
+          <Notifications userId={userId} />
         </div>
       </div>
     </div>
