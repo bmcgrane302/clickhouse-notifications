@@ -155,6 +155,7 @@ export function ServiceList({
       );
 
       const updatedService = await toggleRes.json();
+      console.log('Service toggled:', updatedService);
 
       // 2. Notify Notification Service
       await fetch('http://localhost:4000/notify/service-change', {
@@ -163,7 +164,7 @@ export function ServiceList({
         body: JSON.stringify({
           orgId,
           serviceId: service.id,
-          changeType: 'UPDATED',
+          changeType: updatedService.status,
           changedBy: changedByEmail
         })
       });
