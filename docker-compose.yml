@@ -3,6 +3,7 @@ version: "3.9"
 services:
   mock-clickhouse-api:
     build: ./mock-clickhouse-api
+    command: npx ts-node src/server.ts
     container_name: mock-clickhouse-api
     ports:
       - "5000:5000"
@@ -13,6 +14,7 @@ services:
 
   notification-service:
     build: ./notification-service
+    command: npx ts-node src/server.ts
     container_name: notification-service
     ports:
       - "4000:4000"
