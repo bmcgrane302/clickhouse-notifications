@@ -4,7 +4,7 @@ import { EmailService } from './email.service';
 import { ServiceChangeEvent, Notification, OrgUser, Service } from '../types';
 import { io } from '../websocket';
 
-const CLICKHOUSE_API = 'http://localhost:5000';
+const CLICKHOUSE_API = process.env.CLICKHOUSE_API ?? 'http://mock-clickhouse-api:5000';
 
 
 export const NotificationService = {

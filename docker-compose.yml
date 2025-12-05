@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  mock-clickhouse-api:
+    build: ./mock-clickhouse-api
+    container_name: mock-clickhouse-api
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mock-clickhouse-api:/app
+      - ./shared:/app/shared
+    environment:
+      - NODE_ENV=development
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./notification-service:/app
+      - ./shared:/app/shared
+    environment:
+      - NODE_ENV=development
+      - CLICKHOUSE_API=http://mock-clickhouse-api:5000
+    depends_on:
+      - mock-clickhouse-api
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:5000
+      - VITE_NOTIFY_URL=http://localhost:4000
+    depends_on:
+      - mock-clickhouse-api
+      - notification-service

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { SERVICES } from '../../../shared/mockClickhouseData';
+import { SERVICES } from '../../shared/mockClickhouseData';
 
 const router = Router();
 
