@@ -17,6 +17,11 @@ export function ServiceList({
 }: Props) {
   const [loading, setLoading] = useState<string | null>(null);
 
+  const statusToChangeType: Record<string, 'STARTED' | 'STOPPED'> = {
+    running: 'STARTED',
+    stopped: 'STOPPED'
+  };
+
   const handleAction = async (
     service: Service,
     action: 'start' | 'stop' | 'schedule'
@@ -54,13 +59,14 @@ export function ServiceList({
 
       const updatedService = await toggleRes.json();
 
+      const changeType = statusToChangeType[updatedService.status];
       await fetch('http://localhost:4000/notify/service-change', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           orgId,
           serviceId: service.id,
-          changeType: 'UPDATED',
+          changeType,
           changedBy: changedByEmail
         })
       });
