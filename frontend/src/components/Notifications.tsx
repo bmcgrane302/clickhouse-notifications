@@ -62,25 +62,28 @@
 //   );
 // };
 
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
+import type { Notification } from '../types/domain';
 
-type Notification = {
-  id: string;
-  title: string;
-  message: string;
-  createdAt: string;
-};
+
+// type Notification = {
+//   id: string;
+//   title: string;
+//   message: string;
+//   createdAt: string;
+// };
 
 const socket = io('http://localhost:4000');
 
-export function Notifications({ userId }: { userId: string }) {
+export function NotificationsComponent({ userId }: { userId: string }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   useEffect(() => {
     socket.emit('register', userId);
 
     socket.on('notification', (notification: Notification) => {
+      console.log('Received notification:', notification);
       setNotifications((prev) => [notification, ...prev]);
     });
 
@@ -88,6 +91,7 @@ export function Notifications({ userId }: { userId: string }) {
       socket.off('notification');
     };
   }, [userId]);
+
 
   return (
     <div>
@@ -105,3 +109,4 @@ export function Notifications({ userId }: { userId: string }) {
   );
 }
 
+export const Notifications = memo(NotificationsComponent);

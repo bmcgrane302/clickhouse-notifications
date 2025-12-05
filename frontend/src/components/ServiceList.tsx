@@ -121,13 +121,14 @@
 //   );
 // };
 import { useState } from 'react';
+import type { Service } from '../types/domain';
 
-type Service = {
-  id: string;
-  name: string;
-  status: 'running' | 'stopped';
-  region: string;
-};
+// type Service = {
+//   id: string;
+//   name: string;
+//   status: 'running' | 'stopped';
+//   region: string;
+// };
 
 type Props = {
   services: Service[];
@@ -184,13 +185,16 @@ export function ServiceList({
     <div>
       <h2>Services</h2>
 
-      <table>
+      <table style={{
+        width: '100%',
+        tableLayout: 'fixed'
+      }}>
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Region</th>
-            <th>Status</th>
-            <th />
+            <th style={{ width: '40%' }}>Service Name</th>
+            <th style={{ width: '20%' }}>Region</th>
+            <th style={{ width: '20%' }}>Status</th>
+            <th style={{ width: '20%' }} />
           </tr>
         </thead>
         <tbody>

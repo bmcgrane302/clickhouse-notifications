@@ -1,17 +1,18 @@
 import { useState } from 'react';
+import type { LoginResponse } from '../types/domain';
 
-type LoginResponse = {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    orgId: string;
-  };
-  organization: {
-    id: string;
-    name: string;
-  };
-};
+// type LoginResponse = {
+//   user: {
+//     id: string;
+//     name: string;
+//     email: string;
+//     orgId: string;
+//   };
+//   organization: {
+//     id: string;
+//     name: string;
+//   };
+// };
 
 type Props = {
   onLoginSuccess: (data: LoginResponse) => void;

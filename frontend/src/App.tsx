@@ -33,28 +33,30 @@
 // export default App;
 
 import { useEffect, useState } from 'react';
-import { Login } from './Login';
-import { ServiceList } from './ServiceList';
-import { Notifications } from './Notifications';
+import { Login } from './components/Login';
+import { ServiceList } from './components/ServiceList';
+import { Notifications } from './components/Notifications';
+import type { User, Organization, Service } from './types/domain';
 
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  orgId: string;
-};
 
-type Organization = {
-  id: string;
-  name: string;
-};
+// type User = {
+//   id: string;
+//   name: string;
+//   email: string;
+//   orgId: string;
+// };
 
-type Service = {
-  id: string;
-  name: string;
-  status: 'running' | 'stopped';
-  region: string;
-};
+// type Organization = {
+//   id: string;
+//   name: string;
+// };
+
+// type Service = {
+//   id: string;
+//   name: string;
+//   status: 'running' | 'stopped';
+//   region: string;
+// };
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -81,7 +83,12 @@ export default function App() {
       <h1>{org?.name}</h1>
       <p>Logged in as {user.email}</p>
 
-      <div style={{ display: 'flex', gap: '2rem' }}>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '2fr 1fr',
+        gap: '2rem',
+        alignItems: 'flex-start'
+      }}>
         <ServiceList
           services={services}
           orgId={user.orgId}
