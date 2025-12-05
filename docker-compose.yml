@@ -3,21 +3,25 @@ version: "3.9"
 services:
   mock-clickhouse-api:
     build: ./mock-clickhouse-api
+    command: npx ts-node src/server.ts
     container_name: mock-clickhouse-api
     ports:
       - "5000:5000"
     volumes:
       - ./mock-clickhouse-api:/app
+      - /app/node_modules
     environment:
       - NODE_ENV=development
 
   notification-service:
     build: ./notification-service
+    command: npx ts-node src/server.ts
     container_name: notification-service
     ports:
       - "4000:4000"
     volumes:
       - ./notification-service:/app
+      - /app/node_modules
     environment:
       - NODE_ENV=development
       - CLICKHOUSE_API=http://mock-clickhouse-api:5000

@@ -7,4 +7,4 @@ RUN npm install
 COPY . .
 
 EXPOSE 4000
-CMD ["npm", "run", "dev"]
+CMD ["npx", "ts-node", "src/server.ts"]
