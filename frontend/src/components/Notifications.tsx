@@ -51,6 +51,7 @@ function NotificationsComponent({ userId, onUnreadCountChange, visible }: Props)
       boxSizing: 'border-box'
     }}>
       <h2>Notifications</h2>
+       {notifications.length === 0 && (<p>No notifications</p>)}
 
       <ul style={{ paddingLeft: 0, listStyle: 'none' }}>
         {notifications.map((n) => (

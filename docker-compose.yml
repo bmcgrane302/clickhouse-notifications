@@ -8,7 +8,6 @@ services:
       - "5000:5000"
     volumes:
       - ./mock-clickhouse-api:/app
-      - ./shared:/app/shared
     environment:
       - NODE_ENV=development
 
@@ -19,7 +18,6 @@ services:
       - "4000:4000"
     volumes:
       - ./notification-service:/app
-      - ./shared:/app/shared
     environment:
       - NODE_ENV=development
       - CLICKHOUSE_API=http://mock-clickhouse-api:5000
