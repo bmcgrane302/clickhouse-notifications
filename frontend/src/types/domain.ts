@@ -15,6 +15,7 @@ export type Service = {
   name: string;
   status: 'running' | 'stopped';
   region: string;
+  scheduledForDeletion?: boolean;
 };
 
 export type Notification = {
@@ -22,6 +23,7 @@ export type Notification = {
   title: string;
   message: string;
   createdAt: string;
+  read: boolean;
 };
 
 export type LoginResponse = {

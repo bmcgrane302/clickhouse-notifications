@@ -62,46 +62,163 @@
 //   );
 // };
 
+// import { memo, useEffect, useState } from 'react';
+// import { io } from 'socket.io-client';
+// import type { Notification } from '../types/domain';
+
+
+// // type Notification = {
+// //   id: string;
+// //   title: string;
+// //   message: string;
+// //   createdAt: string;
+// // };
+
+// const socket = io('http://localhost:4000');
+
+// export function NotificationsComponent({ userId }: { userId: string }) {
+//   const [notifications, setNotifications] = useState<Notification[]>([]);
+
+//   useEffect(() => {
+//     socket.emit('register', userId);
+
+//     socket.on('notification', (notification: Notification) => {
+//       console.log('Received notification:', notification);
+//       setNotifications((prev) => [notification, ...prev]);
+//     });
+
+//     return () => {
+//       socket.off('notification');
+//     };
+//   }, [userId]);
+
+
+//   return (
+//     <div style={{ minHeight: 260 }}>
+//       <h2>Live Notifications</h2>
+
+//       <ul style={{ paddingLeft: 0, listStyle: 'none' }}>
+//         {notifications.map((n) => (
+//           <li
+//             key={n.id}
+//             onClick={() =>
+//               setNotifications((prev) =>
+//                 prev.map((x) =>
+//                   x.id === n.id ? { ...x, read: true } : x
+//                 )
+//               )
+//             }
+//             style={{
+//               marginBottom: 12,
+//               padding: 10,
+//               borderRadius: 6,
+//               cursor: 'pointer',
+//               background: n.read ? '#f1f1f1' : '#e3f2ff',
+//               border: n.read ? '1px solid #ddd' : '1px solid #0077ff'
+//             }}
+//           >
+//             <strong>
+//               {n.title} {!n.read && ' •'}
+//             </strong>
+//             <p>{n.message}</p>
+//             <small>
+//               {new Date(n.createdAt).toLocaleTimeString()}
+//             </small>
+//           </li>
+//         ))}
+//       </ul>
+//     </div>
+//   );
+// }
+
+// export const Notifications = memo(NotificationsComponent);
+
 import { memo, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import type { Notification } from '../types/domain';
 
 
-// type Notification = {
-//   id: string;
-//   title: string;
-//   message: string;
-//   createdAt: string;
-// };
-
 const socket = io('http://localhost:4000');
 
-export function NotificationsComponent({ userId }: { userId: string }) {
+type Props = {
+  userId: string;
+  onUnreadCountChange: (count: number) => void;
+  visible: boolean;
+};
+
+function NotificationsComponent({ userId, onUnreadCountChange, visible }: Props) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
+  // Load historical
+  useEffect(() => {
+    fetch(`http://localhost:4000/notify/user/${userId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setNotifications(data);
+        onUnreadCountChange(data.filter((n: Notification) => !n.read).length);
+      });
+  }, [userId, onUnreadCountChange]);
+
+  // Live updates
   useEffect(() => {
     socket.emit('register', userId);
 
-    socket.on('notification', (notification: Notification) => {
-      console.log('Received notification:', notification);
-      setNotifications((prev) => [notification, ...prev]);
-    });
+    const handler = (notification: Notification) => {
+      setNotifications((prev) => {
+        const updated = [notification, ...prev];
+        onUnreadCountChange(updated.filter((n) => !n.read).length);
+        return updated;
+      });
+    };
+
+    socket.on('notification', handler);
 
     return () => {
-      socket.off('notification');
+      socket.off('notification', handler);
     };
-  }, [userId]);
+  }, [userId, onUnreadCountChange]);
 
+  if (!visible) return null;
 
   return (
-    <div>
-      <h2>Live Notifications</h2>
-      <ul>
+    <div style={{
+      minHeight: 260,
+      width: '100%',
+      maxWidth: 420,
+      boxSizing: 'border-box'
+    }}>
+      <h2>Notifications</h2>
+
+      <ul style={{ paddingLeft: 0, listStyle: 'none' }}>
         {notifications.map((n) => (
-          <li key={n.id}>
-            <strong>{n.title}</strong>
+          <li
+            key={n.id}
+            onClick={() => {
+              setNotifications((prev) => {
+                const updated = prev.map((x) =>
+                  x.id === n.id ? { ...x, read: true } : x
+                );
+                onUnreadCountChange(updated.filter((x) => !x.read).length);
+                return updated;
+              });
+            }}
+            style={{
+              // marginBottom: 12,
+              // padding: 10,
+              // borderRadius: 6,
+              // cursor: 'pointer',
+              background: n.read ? '#f1f1f1' : '#e3f2ff',
+              border: n.read ? '1px solid #ddd' : '1px solid #0077ff'
+            }}
+            className="card"
+          >
+            <strong>
+              {n.title} {!n.read && ' •'}
+            </strong>
             <p>{n.message}</p>
-            <small>{new Date(n.createdAt).toLocaleTimeString()}</small>
+            <small>
+              {new Date(n.createdAt).toLocaleTimeString()}
+            </small>
           </li>
         ))}
       </ul>

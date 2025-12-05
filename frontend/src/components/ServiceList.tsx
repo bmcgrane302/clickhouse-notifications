@@ -120,6 +120,106 @@
 //     </div>
 //   );
 // };
+
+
+// import { useState } from 'react';
+// import type { Service } from '../types/domain';
+
+// // type Service = {
+// //   id: string;
+// //   name: string;
+// //   status: 'running' | 'stopped';
+// //   region: string;
+// // };
+
+// type Props = {
+//   services: Service[];
+//   orgId: string;
+//   changedByEmail: string;
+//   onServicesUpdated: (services: Service[]) => void;
+// };
+
+// export function ServiceList({
+//   services,
+//   orgId,
+//   changedByEmail,
+//   onServicesUpdated
+// }: Props) {
+//   const [loading, setLoading] = useState<string | null>(null);
+
+//   const toggleService = async (service: Service) => {
+//     setLoading(service.id);
+
+//     try {
+//       // 1. Toggle in Mock ClickHouse API
+//       const toggleRes = await fetch(
+//         `http://localhost:5000/services/${service.id}/toggle`,
+//         { method: 'POST' }
+//       );
+
+//       const updatedService = await toggleRes.json();
+//       console.log('Service toggled:', updatedService);
+
+//       // 2. Notify Notification Service
+//       await fetch('http://localhost:4000/notify/service-change', {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify({
+//           orgId,
+//           serviceId: service.id,
+//           changeType: updatedService.status,
+//           changedBy: changedByEmail
+//         })
+//       });
+
+//       // 3. Update UI state
+//       onServicesUpdated(
+//         services.map((s) =>
+//           s.id === service.id ? updatedService : s
+//         )
+//       );
+//     } finally {
+//       setLoading(null);
+//     }
+//   };
+
+//   return (
+//     <div>
+//       <h2>Services</h2>
+
+//       <table style={{
+//         width: '100%',
+//         tableLayout: 'fixed'
+//       }}>
+//         <thead>
+//           <tr>
+//             <th style={{ width: '40%' }}>Service Name</th>
+//             <th style={{ width: '20%' }}>Region</th>
+//             <th style={{ width: '20%' }}>Status</th>
+//             <th style={{ width: '20%' }} />
+//           </tr>
+//         </thead>
+//         <tbody>
+//           {services.map((svc) => (
+//             <tr key={svc.id}>
+//               <td>{svc.name}</td>
+//               <td>{svc.region}</td>
+//               <td>{svc.status}</td>
+//               <td>
+//                 <button onClick={() => toggleService(svc)}>
+//                   {loading === svc.id
+//                     ? 'Updating...'
+//                     : 'Toggle'}
+//                 </button>
+//               </td>
+//             </tr>
+//           ))}
+//         </tbody>
+//       </table>
+//     </div>
+//   );
+// }
+
 import { useState } from 'react';
 import type { Service } from '../types/domain';
 
@@ -145,35 +245,68 @@ export function ServiceList({
 }: Props) {
   const [loading, setLoading] = useState<string | null>(null);
 
-  const toggleService = async (service: Service) => {
+  const handleAction = async (
+    service: Service,
+    action: 'start' | 'stop' | 'schedule'
+  ) => {
     setLoading(service.id);
 
     try {
-      // 1. Toggle in Mock ClickHouse API
+      // -------------------
+      // SCHEDULE FOR DELETION (NO BACKEND MUTATION)
+      // -------------------
+      if (action === 'schedule') {
+        await fetch('http://localhost:4000/notify/service-change', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orgId,
+            serviceId: service.id,
+            changeType: 'DELETED',
+            changedBy: changedByEmail
+          })
+        });
+
+        // Mark locally as scheduled
+        onServicesUpdated(
+          services.map((s) =>
+            s.id === service.id
+              ? { ...s, scheduledForDeletion: true }
+              : s
+          )
+        );
+
+        return;
+      }
+
+      // -------------------
+      // START / STOP (toggle)
+      // -------------------
       const toggleRes = await fetch(
         `http://localhost:5000/services/${service.id}/toggle`,
         { method: 'POST' }
       );
 
       const updatedService = await toggleRes.json();
-      console.log('Service toggled:', updatedService);
 
-      // 2. Notify Notification Service
+      // Notify update
       await fetch('http://localhost:4000/notify/service-change', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           orgId,
           serviceId: service.id,
-          changeType: updatedService.status,
+          changeType: 'UPDATED',
           changedBy: changedByEmail
         })
       });
 
-      // 3. Update UI state
+      // Update UI (preserve scheduled flag)
       onServicesUpdated(
         services.map((s) =>
-          s.id === service.id ? updatedService : s
+          s.id === service.id
+            ? { ...updatedService, scheduledForDeletion: s.scheduledForDeletion }
+            : s
         )
       );
     } finally {
@@ -185,30 +318,80 @@ export function ServiceList({
     <div>
       <h2>Services</h2>
 
-      <table style={{
-        width: '100%',
-        tableLayout: 'fixed'
-      }}>
+      <table
+        style={{
+          width: '100%',
+          tableLayout: 'fixed',
+        }}
+      >
         <thead>
           <tr>
-            <th style={{ width: '40%' }}>Service Name</th>
+            <th style={{ width: '35%' }}>Name</th>
             <th style={{ width: '20%' }}>Region</th>
-            <th style={{ width: '20%' }}>Status</th>
-            <th style={{ width: '20%' }} />
+            <th style={{ width: '15%' }}>Status</th>
+            <th style={{ width: '20%' }}>Lifecycle</th>
+            <th style={{ width: '10%' }}>Action</th>
           </tr>
         </thead>
+
         <tbody>
           {services.map((svc) => (
-            <tr key={svc.id}>
-              <td>{svc.name}</td>
-              <td>{svc.region}</td>
-              <td>{svc.status}</td>
-              <td>
-                <button onClick={() => toggleService(svc)}>
-                  {loading === svc.id
-                    ? 'Updating...'
-                    : 'Toggle'}
-                </button>
+            <tr
+              key={svc.id}
+              style={{
+                opacity: svc.scheduledForDeletion ? 0.6 : 1
+              }}
+            >
+              <td style={{ height: 40 }}>{svc.name}</td>
+              <td style={{ height: 40 }}>{svc.region}</td>
+              <td style={{ height: 40 }}>{svc.status}</td>
+              <td style={{ height: 40 }}>
+                {svc.scheduledForDeletion
+                  ? 'Scheduled for Deletion'
+                  : 'Active'}
+              </td>
+
+              <td style={{ height: 40 }}>
+                <select
+                  disabled={
+                    loading === svc.id || svc.scheduledForDeletion
+                  }
+                  defaultValue=""
+                  onChange={(e) => {
+                    const action = e.target.value as
+                      | 'start'
+                      | 'stop'
+                      | 'schedule';
+
+                    if (!action) return;
+
+                    handleAction(svc, action);
+
+                    e.currentTarget.value = '';
+                  }}
+                >
+                  <option value="" disabled>
+                    Select
+                  </option>
+
+                  <option
+                    value="start"
+                    disabled={svc.status === 'running'}
+                  >
+                    Start
+                  </option>
+
+                  <option
+                    value="stop"
+                    disabled={svc.status === 'stopped'}
+                  >
+                    Stop
+                  </option>
+
+                  <option value="schedule">
+                    Schedule for Deletion
+                  </option>
+                </select>
               </td>
             </tr>
           ))}
@@ -217,4 +400,3 @@ export function ServiceList({
     </div>
   );
 }
-
