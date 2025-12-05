@@ -8,8 +8,8 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - /app/node_modules
       - ./mock-clickhouse-api:/app
+      - /app/node_modules
     environment:
       - NODE_ENV=development
 
@@ -20,8 +20,8 @@ services:
     ports:
       - "4000:4000"
     volumes:
-      - /app/node_module
       - ./notification-service:/app
+      - /app/node_module
     environment:
       - NODE_ENV=development
       - CLICKHOUSE_API=http://mock-clickhouse-api:5000
