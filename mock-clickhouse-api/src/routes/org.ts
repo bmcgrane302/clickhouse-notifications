@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { ORGANIZATIONS, ORG_USERS } from '../../shared/mockClickhouseData';
+import { ORG_USERS, ORGANIZATIONS } from '../mocks/mockClickhouseData'
+
 
 
 const router = Router();

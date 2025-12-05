@@ -1,6 +1,5 @@
 import { Router } from 'express';
-import { SERVICES } from '../../shared/mockClickhouseData';
-
+import { SERVICES } from '../mocks/mockClickhouseData';
 const router = Router();
 
 router.get('/:orgId', (req, res) => {
