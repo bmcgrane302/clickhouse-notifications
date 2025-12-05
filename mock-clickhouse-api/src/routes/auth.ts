@@ -3,7 +3,6 @@ import { ORG_USERS, ORGANIZATIONS } from '../../../shared/mockClickhouseData';
 
 const router = Router();
 
-// POST /auth/login
 router.post('/login', (req, res) => {
   const { email } = req.body;
 
